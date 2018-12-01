@@ -1,0 +1,10 @@
+name = "PlainLinearAlgebra"
+uuid = "53025de0-f5aa-11e8-33f3-17339071e9ec"
+authors = ["John Lapeyre <jlapeyre@users.noreply.github.com>"]
+version = "0.1.0"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
