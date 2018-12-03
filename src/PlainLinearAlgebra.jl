@@ -2,24 +2,21 @@ module PlainLinearAlgebra
 
 using LinearAlgebra: I, checksquare
 
-import LinearAlgebra: iterate
-
-import Base: length, size, eltype, getindex, setindex!, firstindex, lastindex,
-       parent
+import Base: iterate, elsize, size, getindex, setindex!, parent
 
 export idmat, diagonal, DiagonalIterator
 
 ### DiagonalIterator
 
-abstract type AbstractDiagonalIterator end
+abstract type AbstractDiagonalIterator{T, V}  <: AbstractVector{T} end
 
 """
     DiagonalIterator{T <: AbstractMatrix}
 
 Iterator over the diagonal of an AbstractMatrix
 """
-struct DiagonalIterator{T <: AbstractMatrix} <: AbstractDiagonalIterator
-    M::T
+struct DiagonalIterator{T, V <:AbstractMatrix} <: AbstractDiagonalIterator{T, V}
+    M::V
     length::Int
 end
 
@@ -34,29 +31,16 @@ no allocation is done, `diagonal` can be faster. For example,
 
 `diagonal` is efficient for types that support efficient cartesian indexing.
 """
-diagonal(M::T) where T <: AbstractMatrix  = DiagonalIterator(M, checksquare(M))
+diagonal(M::V) where V <: AbstractMatrix  = DiagonalIterator{eltype(M), V}(M, checksquare(M))
 
-function iterate(iter::DiagonalIterator, i = 1)
-    return i > iter.length ? nothing : (iter.M[i,i], i + 1)
-end
-length(iter::DiagonalIterator) = iter.length
-size(iter::DiagonalIterator, dim=1) = (iter.length,)
-eltype(iter::DiagonalIterator) = eltype(iter.M)
+iterate(iter::DiagonalIterator, i = 1) = i > iter.length ? nothing : (iter.M[i,i], i + 1)
+size(iter::DiagonalIterator) = (iter.length,)
+elsize(::Type{DiagonalIterator{T, V}}) where {T, V} = sizeof(T)
 getindex(iter::DiagonalIterator, i) = iter.M[i,i]
-setindex!(iter::DiagonalIterator, v, i) = (M[i,i] = v)
-firstindex(iter::DiagonalIterator) = 1 # This may not be general enough
-lastindex(iter::DiagonalIterator) = iter.length
+setindex!(iter::DiagonalIterator, v, i) = (iter.M[i,i] = v)
 parent(iter::DiagonalIterator) = iter.M
+Base.dataids(d::DiagonalIterator) = Base.dataids(parent(d))
 
-# This was not inlined into the subsequent one-line function, causing a performance loss
-@inline function (Base.:(==))(AV::AbstractVector, DI::DiagonalIterator)
-    length(AV) == length(DI) || return false
-    for i in 1:length(AV)
-        AV[i] == DI[i] || return false
-    end
-    return true
-end
-(Base.:(==))(DI::DiagonalIterator, AV::AbstractVector) = AV == DI
 
 ### idmat
 
@@ -67,5 +51,7 @@ Return an `n` x `n` identity matrix of type `Matrix{T}`.
 """
 idmat(::Type{T}, n::Integer) where T = Matrix{T}(I, n, n)
 idmat(n::Integer) = idmat(Float64, n)
+idmat(::Type{T}, m::AbstractMatrix) where T = idmat(T, checksquare(m))
+idmat(m::AbstractMatrix) = idmat(eltype(m), m)
 
 end # module

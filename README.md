@@ -20,6 +20,13 @@ no allocation is done, `diagonal` can be faster. For example,
 
 `diagonal` is efficient for types that support efficient cartesian indexing.
 
+#### Note
+
+Alex Arslan suggested
+```
+diagonal(A::AbstractMatrix, k::Integer=0) = view(A, diagind(A, k)),
+```
+which is probably just as efficient as the implementation here.
 
 ### idmat
 
