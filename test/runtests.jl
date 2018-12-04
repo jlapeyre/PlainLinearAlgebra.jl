@@ -10,6 +10,10 @@ using Test
         @test mdiagonal == mdiag
         @test sum(mdiagonal) ≈ sum(mdiag)
         @test Base.mightalias(mdiagonal, m)
+        d0 = d - 1
+        for k in -d0:d0
+            @test diagonal(m, k) == LinearAlgebra.diag(m, k)
+        end
     end
 end
 

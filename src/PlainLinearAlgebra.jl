@@ -1,46 +1,50 @@
+"""
+    module PlainLinearAlgebra
+
+Some linear-algebra-related functions.
+
+### Functions: `diagonal`, `idmat`
+"""
 module PlainLinearAlgebra
 
-using LinearAlgebra: I, checksquare
+using LinearAlgebra: I, checksquare, diagind
 
-import Base: iterate, elsize, size, getindex, setindex!, parent
+export idmat, diagonal
 
-export idmat, diagonal, DiagonalIterator
+### diagonal
 
-### DiagonalIterator
-
-abstract type AbstractDiagonalIterator{T, V}  <: AbstractVector{T} end
-
+# See Julia issue #30250
 """
-    DiagonalIterator{T <: AbstractMatrix}
+    diagonal(M::AbstractMatrix, k::Integer=0)
 
-Iterator over the diagonal of an AbstractMatrix
+An iterator over the `k`th diagonal of `M`.
+
+`collect(diagonal(M))` is equivalent to `diag(m)`.
+
+# Examples
+```jldoctest
+julia> A = [1 2 3; 4 5 6; 7 8 9]
+3×3 Array{Int64,2}:
+ 1  2  3
+ 4  5  6
+ 7  8  9
+
+julia> dA = diagonal(A, 1)
+2-element view(::Array{Int64,1}, 4:4:8) with eltype Int64:
+ 2
+ 6
+
+julia> dA[1] = 1
+1
+
+julia> A
+3×3 Array{Int64,2}:
+ 1  1  3
+ 4  5  6
+ 7  8  9
+```
 """
-struct DiagonalIterator{T, V <:AbstractMatrix} <: AbstractDiagonalIterator{T, V}
-    M::V
-    length::Int
-end
-
-"""
-    diagonal(M::AbstractMatrix)
-
-Return an iterator over the diagonal of `M`.
-
-`collect(diagonal(M))` is equivalent to `diag(m)`. But, because
-no allocation is done, `diagonal` can be faster. For example,
-`sum(diagonal(M))` is faster than `sum(diag(m))`.
-
-`diagonal` is efficient for types that support efficient cartesian indexing.
-"""
-diagonal(M::V) where V <: AbstractMatrix  = DiagonalIterator{eltype(M), V}(M, checksquare(M))
-
-iterate(iter::DiagonalIterator, i = 1) = i > iter.length ? nothing : (iter.M[i,i], i + 1)
-size(iter::DiagonalIterator) = (iter.length,)
-elsize(::Type{DiagonalIterator{T, V}}) where {T, V} = sizeof(T)
-getindex(iter::DiagonalIterator, i) = iter.M[i,i]
-setindex!(iter::DiagonalIterator, v, i) = (iter.M[i,i] = v)
-parent(iter::DiagonalIterator) = iter.M
-Base.dataids(d::DiagonalIterator) = Base.dataids(parent(d))
-
+diagonal(A::AbstractMatrix, k::Integer=0) = view(A, diagind(A, k))
 
 ### idmat
 
