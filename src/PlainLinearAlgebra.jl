@@ -8,8 +8,8 @@ Some linear-algebra-related functions.
 module PlainLinearAlgebra
 
 using LinearAlgebra: I, checksquare, diagind
-
-export idmat, diagonal
+export idmat, diagonal, superdiagonal, subdiagonal, offdiagonal
+export altdiagonal
 
 ### diagonal
 
@@ -45,6 +45,9 @@ julia> A
 ```
 """
 diagonal(A::AbstractMatrix, k::Integer=0) = view(A, diagind(A, k))
+superdiagonal(A::AbstractMatrix) = diagonal(A, 1)
+subdiagonal(A::AbstractMatrix) = diagonal(A, -1)
+offdiagonal(A, k) = diagonal(A, k)
 
 ### idmat
 
@@ -57,5 +60,8 @@ idmat(::Type{T}, n::Integer) where T = Matrix{T}(I, n, n)
 idmat(n::Integer) = idmat(Float64, n)
 idmat(::Type{T}, m::AbstractMatrix) where T = idmat(T, checksquare(m))
 idmat(m::AbstractMatrix) = idmat(eltype(m), m)
+
+include("fill.jl")
+include("altdiagonal.jl")
 
 end # module
